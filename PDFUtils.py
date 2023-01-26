@@ -20,6 +20,7 @@ class PDFUtils:
         pdf_list = [
             f"{pdfs_dir}{pdf}"
             for pdf in sorted(os.listdir(pdfs_dir), key=lambda x: int(x[:-4]))
+            if pdf[0] != "."
         ]
         merger = pikepdf.Pdf.new()
         for pdf in pdf_list:
@@ -35,7 +36,6 @@ class PDFUtils:
         :param output_dir: directory to save the converted pdfs
         """
         print("Started to convert images to PDFs")
-        images_list = sorted(os.listdir(img_dir), key=lambda x: int(x[:-4]))
 
         def img_to_pdf(image):
             img = Image.open(os.path.join(img_dir, image))
@@ -48,7 +48,9 @@ class PDFUtils:
 
         with ThreadPoolExecutor() as executor:
             future_create_pdf = [
-                executor.submit(img_to_pdf, img) for img in images_list
+                executor.submit(img_to_pdf, img)
+                for img in os.listdir(img_dir)
+                if img[0] != "."
             ]
             for future in as_completed(future_create_pdf):
                 future.result()
@@ -87,10 +89,17 @@ class PDFUtils:
 
 
 if __name__ == "__main__":
+    """
     os.system("rm -rf output.pdf")
     os.system("mkdir converted_pdf_files")
     os.system("mkdir split_images")
     pdf_util = PDFUtils()
     pdf_util.split_pdf_to_images("original.pdf", 5)
     pdf_util.convert_img_dir_to_pdfs("split_images")
+    pdf_util.merge_PDFs("converted_pdf_files/")
+    """
+    pdf_util = PDFUtils()
+
+    os.system("rm -rf converted_pdf_files/*")
+    pdf_util.convert_img_dir_to_pdfs("songs_ss")
     pdf_util.merge_PDFs("converted_pdf_files/")
