@@ -48,8 +48,9 @@ class PDFUtils:
             if pdf[0] != "."
         ]
         merger = pikepdf.Pdf.new()
-        for pdf in pdf_list:
+        for i, pdf in enumerate(pdf_list):
             merger.pages.extend(pikepdf.open(pdf).pages)
+
         merger.save(merged_file_name)
         self.msgs.pop()
         self.msgs.append("Started to merge PDFs...Done")
@@ -89,7 +90,12 @@ class PDFUtils:
                 for img in os.listdir(img_dir)
                 if img[0] != "."
             ]
-            for future in as_completed(future_create_pdf):
+            for i, future in enumerate(as_completed(future_create_pdf)):
+                self.msgs.append(
+                    f"{i} out of {len(future_create_pdf)} images converted to PDF..."
+                )
+                self.show_msg()
+                self.msgs.pop()
                 future.result()
 
         self.msgs.pop()
@@ -129,8 +135,12 @@ class PDFUtils:
             future_to_page = [
                 executor.submit(process_page, i, page) for i, page in enumerate(pages)
             ]
-            for future in as_completed(future_to_page):
+            for i, future in enumerate(as_completed(future_to_page)):
+                self.msgs.append(f"{i} out of {len(pages)} pages split...")
+                self.show_msg()
+                self.msgs.pop()
                 future.result()
+
         self.msgs.pop()
         self.msgs.append("Started to split PDF to images...Done")
         self.msgs.append(
@@ -138,12 +148,39 @@ class PDFUtils:
         )
         self.show_msg()
 
+    def unlock_and_save_pdfs_in_directory(self, input_dir, password):
+        """
+        Unlocks all PDFs in the given 'input_dir' and saves the decrypted PDFs in a folder called 'decrypted_PDFs'
+        """
+
+        self.msgs.append(f"Decrypting PDFs in {input_dir} directory")
+        self.show_msg()
+        pdf_list = [
+            pdf
+            for pdf in os.listdir(input_dir)
+            if not pdf.startswith(".") and pdf.endswith(".pdf")
+        ]
+
+        decrypted_dir = os.path.join(input_dir, "decrypted_pdfs")
+        os.system(f"rm -rf {decrypted_dir}")
+        os.mkdir(decrypted_dir)
+        for pdf in pdf_list:
+            try:
+                unlocked_pdf = pikepdf.open(
+                    os.path.join(input_dir, pdf), password=password
+                )
+            except pikepdf._qpdf.PasswordError:
+                self.msgs.append(
+                    f"Cannot open {pdf} with password '{password}'. Please check. Continuing with the others"
+                )
+                continue
+            unlocked_pdf.save(os.path.join(decrypted_dir, pdf))
+
+        self.msgs.append("Done!")
+        self.show_msg()
+
 
 if __name__ == "__main__":
 
     pdf_util = PDFUtils()
-    os.system("rm -rf converted_pdf_files/*")
-    os.system("rm -rf split_images/*")
-    pdf_util.split_pdf_to_images("original.pdf", 3)
-    pdf_util.convert_img_dir_to_pdfs()
-    pdf_util.merge_PDFs()
+    pdf_util.unlock_and_save_pdfs_in_directory("password_inp", "giro")
