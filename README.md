@@ -26,13 +26,13 @@ The Comprehensive PDF Utility Toolbox is a Python project that provides a set of
 2. Navigate to the project directory:
 
    ```
-   cd pdf-utility-toolbox
+   cd PDFUtils
    ```
 
 3. Run the Python script:
 
    ```
-   python pdf_utils.py
+   python PDFUtils.py
    ```
 
 4. Follow the instructions in the console to perform different PDF operations.
