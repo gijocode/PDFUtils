@@ -17,6 +17,7 @@ class PDFUtils:
         self.msgs = [" W e l c o m e   t o   P D F   U t i l i t y "]
 
     def show_msg(self) -> None:
+        # TODO: help
         # If your OS is Windows, change 'clear' to 'cls'
         os.system("clear")
         for msg in self.msgs:
@@ -48,7 +49,7 @@ class PDFUtils:
             if pdf[0] != "."
         ]
         merger = pikepdf.Pdf.new()
-        for i, pdf in enumerate(pdf_list):
+        for _, pdf in enumerate(pdf_list):
             merger.pages.extend(pikepdf.open(pdf).pages)
 
         merger.save(merged_file_name)
@@ -77,7 +78,7 @@ class PDFUtils:
 
         def img_to_pdf(image):
             img = Image.open(os.path.join(img_dir, image))
-            pdf_file = open(f"{output_dir}{output_prefix}-{image[:-4]}.pdf", "wb")
+            pdf_file = open(f"{output_dir}{output_prefix}-{image[:-5]}.pdf", "wb")
             canvas = Canvas(pdf_file, pagesize=(img.width, img.height))
             canvas.drawImage(ImageReader(img), 0, 0, img.width, img.height)
             canvas.showPage()
@@ -183,4 +184,5 @@ class PDFUtils:
 if __name__ == "__main__":
 
     pdf_util = PDFUtils()
-    pdf_util.unlock_and_save_pdfs_in_directory("password_inp", "giro")
+    pdf_util.convert_img_dir_to_pdfs("imgs")
+    pdf_util.merge_PDFs()
